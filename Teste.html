@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BotVendas Pro - Dashboard Completo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #8A2BE2;
+            --primary-dark: #6A0DAD;
+            --secondary: #9C27B0;
+            --accent: #E040FB;
+            --dark: #1A1A2E;
+            --darker: #0F0F1B;
+            --light: #F5F5F7;
+            --success: #00FF88;
+            --danger: #FF375F;
+            --warning: #FFAA00;
+            --info: #00B8FF;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--darker), var(--dark));
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Loading Screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .robot-icon {
+            font-size: 120px;
+            margin-bottom: 30px;
+            animation: rotate 3s linear infinite;
+        }
+
+        .loading-text {
+            font-size: 28px;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+
+        .loading-bar-container {
+            width: 500px;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .loading-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent), #FF00FF);
+            border-radius: 10px;
+            animation: loading 4s ease-in-out forwards;
+        }
+
+        /* Container Principal */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            display: none;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo-icon {
+            font-size: 50px;
+            color: var(--accent);
+        }
+
+        .logo-text {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--accent), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr 400px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: rgba(30, 30, 46, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar-section {
+            margin-bottom: 40px;
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            color: var(--accent);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item {
+            padding: 18px 20px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(138, 43, 226, 0.2);
+            border-color: rgba(138, 43, 226, 0.3);
+        }
+
+        .nav-item.active {
+            background: rgba(138, 43, 226, 0.3);
+            border-color: var(--accent);
+            border-left: 4px solid var(--accent);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: rgba(30, 30, 46, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            min-height: 800px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section-title {
+            font-size: 32px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: linear-gradient(90deg, var(--light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Webhook Card */
+        .webhook-card {
+            background: rgba(42, 42, 62, 0.8);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .webhook-form {
+            display: flex;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .webhook-input {
+            flex: 1;
+            padding: 20px 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .webhook-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(224, 64, 251, 0.3);
+        }
+
+        .btn {
+            padding: 20px 35px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(138, 43, 226, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #00CC66);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 255, 136, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning), #FF8800);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #FF0044);
+            color: white;
+        }
+
+        /* Status Grid */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+
+        .status-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .status-number {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .status-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* Console */
+        .console-container {
+            background: #1E1E2E;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .console-log {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border-left: 4px solid;
+        }
+
+        .log-success {
+            background: rgba(0, 255, 136, 0.1);
+            border-left-color: var(--success);
+        }
+
+        .log-error {
+            background: rgba(255, 55, 95, 0.1);
+            border-left-color: var(--danger);
+        }
+
+        .log-info {
+            background: rgba(138, 43, 226, 0.1);
+            border-left-color: var(--accent);
+        }
+
+        .log-warning {
+            background: rgba(255, 170, 0, 0.1);
+            border-left-color: var(--warning);
+        }
+
+        /* Right Panel */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .panel-card {
+            background: rgba(30, 30, 46, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-small {
+            padding: 15px 20px;
+            font-size: 14px;
+        }
+
+        .message-preview {
+            background: rgba(42, 42, 62, 0.6);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Animações */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes loading {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Tabs */
+        .tabs-container {
+            background: rgba(42, 42, 62, 0.8);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tabs-header {
+            display: flex;
+            background: rgba(52, 52, 72, 0.9);
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 20px 30px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tab.active {
+            border-bottom: 3px solid var(--accent);
+            background: rgba(138, 43, 226, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .code-editor {
+            width: 100%;
+            min-height: 400px;
+            background: #1E1E2E;
+            color: #D4D4D4;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 25px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        /* Models Grid */
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .model-card {
+            background: rgba(42, 42, 62, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .model-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .model-icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .model-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        /* Send Section */
+        .send-section {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(138, 43, 226, 0.1));
+            border-radius: 20px;
+            padding: 50px;
+            margin: 40px 0;
+            border: 2px solid var(--success);
+            text-align: center;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, var(--success), #00CC66);
+            color: white;
+            font-size: 24px;
+            padding: 25px 50px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(0, 255, 136, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <div class="robot-icon">🤖⚙️</div>
+            <div class="loading-text">Inicializando Dashboard BotVendas Pro</div>
+            <div class="loading-bar-container">
+                <div class="loading-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container Principal -->
+    <div class="container" id="main-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="logo-text">BotVendas Pro</div>
+            </div>
+            <div class="user-menu">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 600;">Administrador</div>
+                    <div style="font-size: 14px; opacity: 0.8;">Online</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-title">
+                        <i class="fas fa-sliders-h"></i>
+                        PAINEL PRINCIPAL
+                    </div>
+                    <div class="nav-item active" data-section="dashboard">
+                        <div class="nav-icon"><i class="fas fa-home"></i></div>
+                        <div>Dashboard</div>
+                    </div>
+                    <div class="nav-item" data-section="webhook">
+                        <div class="nav-icon"><i class="fas fa-link"></i></div>
+                        <div>Configurar Webhook</div>
+                    </div>
+                    <div class="nav-item" data-section="messages">
+                        <div class="nav-icon"><i class="fas fa-comments"></i></div>
+                        <div>Mensagens</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">
+                        <i class="fas fa-cubes"></i>
+                        FUNÇÕES DO BOT
+                    </div>
+                    <div class="nav-item" data-section="functions">
+                        <div class="nav-icon"><i class="fas fa-code"></i></div>
+                        <div>Editor de Funções</div>
+                    </div>
+                    <div class="nav-item" data-section="models">
+                        <div class="nav-icon"><i class="fas fa-shapes"></i></div>
+                        <div>Modelos Prontos</div>
+                    </div>
+                    <div class="nav-item" data-section="send">
+                        <div class="nav-icon"><i class="fas fa-paper-plane"></i></div>
+                        <div>Enviar Tudo</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">
+                        <i class="fas fa-chart-bar"></i>
+                        ANALYTICS
+                    </div>
+                    <div class="nav-item" data-section="analytics">
+                        <div class="nav-icon"><i class="fas fa-chart-line"></i></div>
+                        <div>Estatísticas</div>
+                    </div>
+                    <div class="nav-item" data-section="logs">
+                        <div class="nav-icon"><i class="fas fa-list"></i></div>
+                        <div>Logs do Sistema</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Dashboard Section -->
+                <div class="section active" id="dashboard-section">
+                    <div class="section-title">
+                        <i class="fas fa-home"></i>
+                        Dashboard Principal
+                    </div>
+                    
+                    <div class="status-grid">
+                        <div class="status-card">
+                            <div class="status-icon" style="color: var(--accent);">
+                                <i class="fas fa-link"></i>
+                            </div>
+                            <div class="status-number" id="status-webhook">❌</div>
+                            <div class="status-label">Webhook Status</div>
+                        </div>
+                        <div class="status-card">
+                            <div class="status-icon" style="color: var(--success);">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="status-number" id="status-bot">Inativo</div>
+                            <div class="status-label">Bot Status</div>
+                        </div>
+                        <div class="status-card">
+                            <div class="status-icon" style="color: var(--warning);">
+                                <
